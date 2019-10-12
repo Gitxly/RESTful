@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript">
+/*
+ * 页面加载,从cookie中获得id
+ 	ajax发送请求,查 页面填充
+ */
+$(document).ready(function(){
+	// 获得cookie,JavaScript获得cookie是全部cookie  啥子意思? ---------------------------------------------------------------------------
+	var cookies = document.cookie.split("; ");
+	var kv = cookies[0].split("=");
+	var id = kv[1];
+	
+	$.ajax({
+		url:"/RESTful/user/"+id,
+		type:"GET",
+		success:function(data){
+			if(data.code == 200){
+				$("input[name='name']").val(data.data.name);
+				$("input[name='id']").val(data.data.id);
+				$("input[name='password']").val(data.data.password);
+				$("input[name='birthday']").val(data.data.birthday);
+			}
+		}
+	});
+});
+</script>
+<body>
+<form action="#">
+	<table>
+		<tr>
+			<td>用户名</td>
+			<td>
+				<input type="hidden" name="id" value="">
+				<input type="text" name="name" value="">
+			</td>
+		</tr>
+		<tr>
+			<td>密码</td>
+			<td>
+				<input type="password" name="password" value="">
+			</td>
+		</tr>
+		<tr>
+			<td>生日</td>
+			<td>
+				<input type="text" name="birthday" value="">
+			</td>
+		</tr>
+	</table>
+	<input type="submit" value="更新" onclick="return updFun();">
+</form>
+<script type="text/javascript">
+	/*
+		因为PUT 请求 到后台Controller想要将数据封装成对象有两种方式
+		1. 前台ajax还继续使用post请求方式,但是在data中写{_method:"POST","id":"","name":"",...}
+			后台Controller继续使用method=method=RequestMethod.PUT 接收即可
+			但是需要在web.xml中加入一些配置
+			https://blog.csdn.net/liuyuanjiang109/article/details/78972644#commentBox
+	
+		
+		2. 另一种方法简单一点
+			就是前台继续使用PUT方式提交,但是data数据 必须是json格式
+			后台需要封装的对象必须使用@RequestBody 解析
+	---------------------------------------------------------------------
+		ps : 不管以上哪种方式,data都应该是json格式数据,所有使用序列化生成的格式不好用,需要手动拼接
+	*/
+	
+function updFun(){
+	// 获得表单数据
+	var name = $("input[name='name']").val();
+	var id = $("input[name='id']").val();
+	var password = $("input[name='password']").val();
+	var birthday = $("input[name='birthday']").val();
+	/*
+		执行更新使用的请求方式是PUT
+		PUT 请求需要发送JSON字符串数据,不然报400
+	*/
+	var jsonObj = {"id":id,"name":name,"password":password,"birthday":birthday};
+	var jsonStr = JSON.stringify(jsonObj); // 这个方法是什么意思? --------------------------------------------------------------------
+	$.ajax({
+		url:"/RESTful/user",
+		type:"PUT",
+		/*
+			PUT 请求格式需要发送 JSON 数据,但是 ajax 默认发送的数据格式是
+			application/x-www-form-urlencoded,所以需要修改为
+			contentType:"application/json;chatset=utf-8"
+		*/
+		contentType:"application/json;charset=utf-8",
+		data:jsonStr,
+		success:function(data){
+			if(data.code == 200){
+				alert("更新成功");
+				window.location.href="/RESTful/view/list.html"
+			}
+		}
+	});
+	/*
+		表单的提交中设置点击事件,加入 return,那么点击事件对应的函数得有返回值
+			返回 true,那么 该表单会正常提交
+			返回 false,表单就不会提交了
+			如果没有设置好会报错
+	*/
+	return false;			
+}
+	
+</script>
+
+</body>
+</html>

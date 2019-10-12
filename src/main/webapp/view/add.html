@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<form id="formId" action="#">
+	<table>
+		<tr>
+			<td>用户名</td>
+			<td>
+				<input type="text" name="name">
+			</td>
+		</tr>
+		<tr>
+			<td>密码</td>
+			<td>
+				<input type="text" name="password">
+			</td>
+		</tr>
+		<tr>
+			<td>生日</td>
+			<td>
+				<input type="text" name="birthday">
+			</td>
+		</tr>
+		
+	</table>
+	<input onclick="return addFun();" type="submit" value="添加">
+</form>
+<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript">
+	/*
+		点击 添加按钮,触发事件
+		1. 获得表单中的数据
+		1.1 检验
+		2. 发送请求,携带数据
+		3. 成功后重新回到首页
+	*/
+	function addFun(){
+		// 获得表单数据 -> 表单序列化
+		var obj = $("#formId").serialize();  // serialize() -> 可以将 form 表单中的数据变为字符串 key=value&keyvalue
+											 // serializeArray() -> 将 form 表单中的每一个 input 数据变为 json 对象
+		$.ajax({
+			url:"/RESTful/user",
+			/*
+				注意 : 发送的数据是表单序列化出来的,但是后台直接即使有User就可以封装成功,因为post提交比较常见,
+					springmvc直接封装好了
+			*/
+			data:obj,
+			type:"POST",
+			success:function(msg){
+				if(msg.code == 200){
+					alert("添加成功");
+					window.location.href="/RESTful/view/list.html";
+				}else{
+					alert("添加失败");
+				}
+			}
+		});
+		return false;
+	}
+</script>
+</body>
+</html>

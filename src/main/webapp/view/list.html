@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<a href="../view/add.html">添加用户</a>
+	<table>
+		<tr>
+			<td>编号</td>
+			<td>用户名</td>
+			<td>密码</td>
+			<td>生日</td>
+			<td>操作</td>
+		</tr>
+	</table>
+<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript">
+/*
+ * 页面加载
+ 
+	在登录的ajax的回调函数中判断是否成功,成功了 跳转到另一个html页面,
+	在加载该页面时,使用ajax查全部的,在回调中为页面赋值
+ 
+ */
+	$(document).ready(function(){   // 函数是什么? --> 页面加载完成是运行的代码
+		$.ajax({
+			url:"/RESTful/user/list",
+			type:"GET",
+			success:function(data){
+				if(data.code == 200){
+					/*
+						日期 : 数据库查出的是Date对象,但是经过@ResponseBody 将返回的json的日期格式
+							是一个数字类型
+					
+					*/
+					for(var i=0;i<data.data.length;i++){
+						var timeNum = data.data[i].birthday;
+						var timeObj = new Date(timeNum);
+						var day = timeObj.getDate();
+						var month = timeObj.getMonth()+1;
+						var year = timeObj.getFullYear();
+						var birTime = year+"-"+month+"-"+day;
+						$("tr:last").after("<tr>"+         // tr:last?--------------------------------------------------------------------
+							"<td>"+data.data[i].id+"</td>"+
+							"<td>"+data.data[i].name+"</td>"+
+							"<td>"+data.data[i].password+"</td>"+
+							"<td>"+birTime+"</td>"+
+							"<td><a onclick=\"del("+data.data[i].id+")\" href=\"#\">删除</a>|"+
+							"<a onclick=\"toUpdata("+data.data[i].id+")\" href=\"#\">更新</a></td>"+
+							"</tr>");
+					}
+				}
+			}
+		});
+	});
+</script>
+ <script type="text/javascript">
+	function del(id){
+		alert(id);
+		$.ajax({
+			url:"/RESTful/user/"+id,   // /user/1
+			type:"DELETE",
+			success:function(data){
+				if(data.code == 200){
+					alert("删除成功")
+					window.location.href="/RESTful/view/list.html";
+				}
+			}
+		});
+	}
+</script> 
+
+ <script type="text/javascript">
+	function toUpdata(id){
+		/*
+			在跳转更新界面时,向 coolie 写入 id\
+			在更新页面中国从 coolie 获得 id
+		*/
+		document.cookie="userId="+id;  // 这个函数是什么? ------------------------------------------------------------------------------
+		window.location.href="/RESTful/view/updata.html";
+	}
+</script> 
+
+</body>
+</html>
